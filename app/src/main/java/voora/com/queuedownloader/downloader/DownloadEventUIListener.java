@@ -1,27 +1,18 @@
 package voora.com.queuedownloader.downloader;
 
 
+import voora.com.queuedownloader.database.DItem;
+
 public interface DownloadEventUIListener {
 
-    void onDownloadOpened(String movieId , int quality,int progress);
+    void onDownloadProgress(DItem dItem , long progress);
 
-    void onDownloadProgress(String movieId, String localPath, int currentProgress);
+    void onDownloadPaused(DItem dItem);
 
-    void onDownloadDRMServerAuth(String movieId);
+    void onDownloadStarted(DItem dItem);
 
-    void onDownloadChunkFailed(String movieId, int currentProgress);
+    void onDownloadCancelled(DItem dItem);
 
-    void onDownloadPaused(String movieId, int currentProgress ,boolean interrupted);
+    void onDownloadCompleted(DItem dItem);
 
-    void onDownloadResumed(String movieId, int currentProgress);
-
-    void onDownloadCompleted(String movieId,String localPath, int quality, int currentProgress);
-
-    void onDownloaderManifestOk(String movieId, String localPath ,int quality ,int progress);
-
-    void onDownloadFailed(String movieId,int currentProgress, int code);
-
-    void onDownloadCancelled(String movieId,int currentProgress);
-
-    void onDiskFull(String movieId, int currentProgress);
 }
