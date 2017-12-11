@@ -13,4 +13,6 @@ import voora.com.queuedownloader.database.DItem;
 public interface MainView extends MvpLceView<List<DItem>> {
 
     void showAddItem();
+
+    void notifyItemChanged(List<DItem> data, int position);
 }

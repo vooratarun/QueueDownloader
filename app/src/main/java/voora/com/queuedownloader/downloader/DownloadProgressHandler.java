@@ -43,6 +43,12 @@ public class DownloadProgressHandler {
         ((DownloadService) context).startForeground(notificationId, notification);
     }
 
+    public void stopForegroundNotification() {
+
+        ((DownloadService) context).stopForeground(true);
+
+    }
+
     public void setDownloadItem(DItem downloadItem) {
         this.downloadItem = downloadItem;
     }

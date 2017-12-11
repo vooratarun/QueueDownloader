@@ -36,6 +36,9 @@ public class DItem implements Parcelable {
     @ColumnInfo(name = "fileName")
     private String fileName;
 
+    @ColumnInfo(name = "downloadId")
+    private int downloadId = -1;
+
     public DItem(int id, String downloadUrl, String downloadPath, int downloadPercent , int state,
                  String fileName) {
         this.id = id;
@@ -96,6 +99,14 @@ public class DItem implements Parcelable {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public int getDownloadId() {
+        return downloadId;
+    }
+
+    public void setDownloadId(int downloadId) {
+        this.downloadId = downloadId;
     }
 
 

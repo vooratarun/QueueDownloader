@@ -9,14 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import voora.com.queuedownloader.database.AppDatabase;
 import voora.com.queuedownloader.database.DItem;
@@ -122,13 +120,14 @@ public class DItemsAdapter extends RecyclerView.Adapter<DItemsAdapter.ItemViewHo
             } else if (dItem.getState() == DownloadState.CANCEL.ordinal()) {
                 downloadState.setText("CANCELLED");
                 download.setVisibility(View.VISIBLE);
-
             } else if (dItem.getState() == DownloadState.UNKNOWN.ordinal()) {
                 downloadState.setText("UNKNOWN");
                 download.setVisibility(View.VISIBLE);
             } else if (dItem.getState() == DownloadState.NORMAL.ordinal()) {
                 downloadState.setText("NORMAL");
                 download.setVisibility(View.VISIBLE);
+            } else if (dItem.getState() == DownloadState.COMPLETED.ordinal()) {
+                downloadState.setText("COMPLETED");
             }
         }
 
@@ -144,19 +143,12 @@ public class DItemsAdapter extends RecyclerView.Adapter<DItemsAdapter.ItemViewHo
            disposable = dItemSubscriber
                .subscribeOn(Schedulers.io())
                .observeOn(AndroidSchedulers.mainThread())
-               .subscribe(new Consumer<DItem>() {
-                   @Override
-                   public void accept(DItem dItem) throws Exception {
-                       Toast.makeText(context, "set data", Toast.LENGTH_SHORT).show();
-                        setUI(dItem);
-                   }
-               }, new Consumer<Throwable>() {
-                   @Override
-                   public void accept(Throwable throwable) throws Exception {
+               .subscribe(dItem1 -> {
+                  //  Log.d("Presenter", " changing data for item " + dItem1.getFileName());
+                    setUI(dItem1);
+               }, throwable -> {
 
-                   }
                });
-
         }
     }
 }

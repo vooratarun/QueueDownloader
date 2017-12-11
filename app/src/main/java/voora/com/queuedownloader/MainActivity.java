@@ -38,10 +38,7 @@ public class MainActivity extends MvpLceActivity<RelativeLayout,List<DItem>,Main
         recyclerView.setAdapter(adapter);
 
         findViewById(R.id.addItem).setOnClickListener(v ->
-                presenter.insertAnItem(getApplicationContext()));
-
-        findViewById(R.id.updateItem).setOnClickListener(v ->
-                presenter.updateAnItem(getApplicationContext(),1));
+                presenter.insertTestData(getApplicationContext()));
 
         loadData(false);
     }
@@ -55,13 +52,18 @@ public class MainActivity extends MvpLceActivity<RelativeLayout,List<DItem>,Main
 
     @Override
     protected String getErrorMessage(Throwable e, boolean pullToRefresh) {
-        Toast.makeText(this, "show Error", Toast.LENGTH_SHORT).show();
         return "Error";
     }
 
     @Override
     public void showAddItem() {
         findViewById(R.id.addItem).setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void notifyItemChanged(List<DItem> data, int position) {
+        adapter.setItemList(data);
+        adapter.notifyItemChanged(position);
     }
 
 
@@ -85,17 +87,17 @@ public class MainActivity extends MvpLceActivity<RelativeLayout,List<DItem>,Main
 
     @Override
     public void onPauseClick(DItem dItem) {
-
+        DownloadService.pauseDownload(this,selectedItem);
     }
 
     @Override
     public void onResumeClick(DItem dItem) {
-
+        DownloadService.resumeDownload(this,selectedItem);
     }
 
     @Override
     public void onCancleClick(DItem dItem) {
-
+        DownloadService.cancelDownload(this,selectedItem);
     }
 
     @Override
@@ -117,7 +119,6 @@ public class MainActivity extends MvpLceActivity<RelativeLayout,List<DItem>,Main
     }
 
     private void startFileDownload(DItem selectedItem) {
-
         DownloadService.startDownload(this,selectedItem);
     }
 

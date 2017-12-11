@@ -12,6 +12,8 @@ import android.os.Message;
 import android.os.Process;
 import android.support.annotation.NonNull;
 
+import com.downloader.Progress;
+
 import voora.com.queuedownloader.database.DItem;
 
 
@@ -24,10 +26,11 @@ public class DownloadService extends Service  implements DownloadEventUIListener
     public static final String START_SERVICE_ACTION = "START";
     public static final String PAUSE_SERVICE_ACTION = "PAUSE";
     public static final String CANCEL_SERVICE_ACTION = "CANCEL";
-    public static final String RESEUME_SERVICE_ACTION = "RESUME";
+    public static final String RESUME_SERVICE_ACTION = "RESUME";
 
     ThreadLocal<PRFileDownloader> fileDownloader = new ThreadLocal<>();
     private DownloadProgressHandler downloadProgressHandler;
+    private DBUpdateHandler dbUpdateHandler;
 
     public ServiceHandler serviceHandler;
     public Looper bgThreadLooper;
@@ -42,6 +45,27 @@ public class DownloadService extends Service  implements DownloadEventUIListener
         context.startService(intent);
     }
 
+    public static void pauseDownload(@NonNull Context context, @NonNull DItem dItem) {
+        Intent intent = new Intent(context,DownloadService.class);
+        intent.putExtra(EXTRA_DITEM,dItem);
+        intent.putExtra(SERVICE_ACTION,PAUSE_SERVICE_ACTION);
+        context.startService(intent);
+    }
+
+    public static void resumeDownload(@NonNull Context context, @NonNull DItem dItem) {
+        Intent intent = new Intent(context,DownloadService.class);
+        intent.putExtra(EXTRA_DITEM,dItem);
+        intent.putExtra(SERVICE_ACTION,RESUME_SERVICE_ACTION);
+        context.startService(intent);
+    }
+    public static void cancelDownload(@NonNull Context context, @NonNull DItem dItem) {
+        Intent intent = new Intent(context,DownloadService.class);
+        intent.putExtra(EXTRA_DITEM,dItem);
+        intent.putExtra(SERVICE_ACTION,CANCEL_SERVICE_ACTION);
+        context.startService(intent);
+    }
+
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -49,9 +73,10 @@ public class DownloadService extends Service  implements DownloadEventUIListener
         HandlerThread handlerThread = new HandlerThread("DownloadThread",
                 Process.THREAD_PRIORITY_BACKGROUND);
         handlerThread.start();
+
+        dbUpdateHandler = new DBUpdateHandler(this);
         bgThreadLooper = handlerThread.getLooper();
         serviceHandler = new ServiceHandler(handlerThread.getLooper());
-
     }
 
     @Override
@@ -62,7 +87,6 @@ public class DownloadService extends Service  implements DownloadEventUIListener
                postMessageToTheBackgroundThread(intent, startId);
            }
         }
-
         return START_STICKY;
     }
 
@@ -71,7 +95,6 @@ public class DownloadService extends Service  implements DownloadEventUIListener
         Message msg = serviceHandler.obtainMessage();
         msg.setData(intent.getExtras());
         serviceHandler.sendMessage(msg);
-
     }
 
     @Override
@@ -80,45 +103,76 @@ public class DownloadService extends Service  implements DownloadEventUIListener
     }
 
     @Override
-    public void onDownloadProgress(DItem dItem, long progress) {
+    public void onDownloadProgress(DItem dItem, Progress progress) {
+        double div = (progress.currentBytes + 0.01) / (progress.totalBytes + 0.01);
+        int progressInt = (int) (div * 100);
 
-        downloadProgressHandler.updateProgress(dItem,(int)progress);
+        new Handler(Looper.getMainLooper()).post(() ->
+             downloadProgressHandler.updateProgress(dItem, progressInt));
+
+        dbUpdateHandler.updateProgressInDB(dItem,progressInt);
     }
 
     @Override
     public void onDownloadPaused(DItem dItem) {
-
+        dbUpdateHandler.updatePauseInDB(dItem);
     }
 
     @Override
     public void onDownloadStarted(DItem dItem) {
-
         downloadProgressHandler.setDownloadItem(dItem);
-        downloadProgressHandler.startForegroundNotification(0);
+        downloadProgressHandler.startForegroundNotification(dItem.getDownloadPercent());
     }
 
     @Override
     public void onDownloadCancelled(DItem dItem) {
-
+        dbUpdateHandler.updateCancelledInDB(dItem);
+        downloadProgressHandler.stopForegroundNotification();
+        stopSelf();
     }
 
     @Override
     public void onDownloadCompleted(DItem dItem) {
+        dbUpdateHandler.updateCompletedInDB(dItem);
+        downloadProgressHandler.stopForegroundNotification();
+        stopService();
+    }
+
+    public void stopService() {
+        stopSelf();
+        new Handler().postDelayed(() -> {
+            bgThreadLooper.quit();
+            serviceHandler = null;
+            serviceHandler = null;
+            fileDownloader = null;
+            dbUpdateHandler = null;
+        },300);
 
     }
 
     public void startDownload(DItem dItem) {
-
         downloadProgressHandler = new DownloadProgressHandler(this,dItem);
-
-        if(fileDownloader == null)
-            fileDownloader = new ThreadLocal<>();
-
         fileDownloader.set(new PRFileDownloader(DownloadService.this,dItem,this));
         fileDownloader.get().startFileDownload();
     }
 
+    public void pauseDownload(DItem dItem) {
+        if(fileDownloader.get() == null)
+            fileDownloader.set(new PRFileDownloader(DownloadService.this,dItem,this));
+        fileDownloader.get().pauseFileDownload();
+    }
 
+    public void resumeDownload(DItem dItem) {
+        if(fileDownloader.get() == null)
+            fileDownloader.set(new PRFileDownloader(DownloadService.this,dItem,this));
+        fileDownloader.get().resumeFileDownload();
+    }
+
+    public void cancelDownload(DItem dItem) {
+        if(fileDownloader.get() == null)
+            fileDownloader.set(new PRFileDownloader(DownloadService.this,dItem,this));
+        fileDownloader.get().cancelFileDownload();
+    }
 
     public class ServiceHandler extends Handler {
 
@@ -135,11 +189,14 @@ public class DownloadService extends Service  implements DownloadEventUIListener
                 case START_SERVICE_ACTION :
                     startDownload(dItem);
                     break;
-                case RESEUME_SERVICE_ACTION :
+                case PAUSE_SERVICE_ACTION :
+                    pauseDownload(dItem);
+                    break;
+                case RESUME_SERVICE_ACTION :
+                    resumeDownload(dItem);
                     break;
                 case CANCEL_SERVICE_ACTION :
-                    break;
-                case PAUSE_SERVICE_ACTION :
+                    cancelDownload(dItem);
                     break;
             }
         }

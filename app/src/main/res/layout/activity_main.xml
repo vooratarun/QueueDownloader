@@ -41,7 +41,7 @@
         android:visibility="gone"
         android:layout_below="@+id/errorView"
         android:layout_centerInParent="true"
-        android:text="ADD ITEM"
+        android:text="INSERT DUMMY DATA"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

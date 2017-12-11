@@ -27,21 +27,18 @@ public class MainPresenter extends MvpBasePresenter<MainView> {
     private Executor executor = Executors.newFixedThreadPool(2);
 
 
+
     public void loadDownloadItems(Context context) {
-
-
 
         AppDatabase.getAppDatabase(context).downloadDao().getAllItems()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(this::showData, throwable -> showError());
-
     }
 
+
     public void showData(@Nullable  final List<DItem> dItems){
-        Log.d(TAG,"ShowData dItems");
         ifViewAttached(view -> {
-            Log.d(TAG,"dItems " + dItems);
             if(dItems != null && dItems.size() > 0) {
                 view.setData(dItems);
                 view.showContent();
@@ -54,14 +51,13 @@ public class MainPresenter extends MvpBasePresenter<MainView> {
     public void showError(){
         Log.d(TAG,"showError");
         ifViewAttached(view -> {
-            Log.d(TAG,"showing error");
            // view.showError(new Throwable("Error"),false);
             view.showAddItem();
         });
     }
 
 
-    public void insertAnItem(Context context){
+    public void insertTestData(Context context){
 
 
         final DItem dItem1 = DItem.newBuilder()
@@ -115,30 +111,6 @@ public class MainPresenter extends MvpBasePresenter<MainView> {
         executor.execute(() -> AppDatabase.getAppDatabase(context)
                 .downloadDao().insertAll(dItem1,dItem2,dItem3,dItem4,dItem5));
 
-    }
-
-    public void updateAnItem(Context context , int id){
-
-        insertAnItem(context);
-
-//        AppDatabase.getAppDatabase(context).downloadDao().getItemById(id)
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe(new Consumer<DItem>() {
-//                @Override
-//                public void accept(DItem dItem) throws Exception {
-//                    dItem.setDownloadPercent(dItem.getDownloadPercent() + 2);
-//                    Log.d(TAG," got item from db "+ dItem.getId() + dItem.getDownloadPercent());
-//
-//                    executor.execute(() -> AppDatabase.getAppDatabase(context)
-//                            .downloadDao().insertItem(dItem));
-//                }
-//            }, new Consumer<Throwable>() {
-//                @Override
-//                public void accept(Throwable throwable) throws Exception {
-//
-//                }
-//            });
     }
 
 }

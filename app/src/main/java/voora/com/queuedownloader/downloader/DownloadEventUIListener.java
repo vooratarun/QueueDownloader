@@ -1,11 +1,13 @@
 package voora.com.queuedownloader.downloader;
 
 
+import com.downloader.Progress;
+
 import voora.com.queuedownloader.database.DItem;
 
 public interface DownloadEventUIListener {
 
-    void onDownloadProgress(DItem dItem , long progress);
+    void onDownloadProgress(DItem dItem , Progress progress);
 
     void onDownloadPaused(DItem dItem);
 

@@ -11,5 +11,6 @@ public enum DownloadState {
     QUEUED,
     PAUSED,
     CANCEL,
-    UNKNOWN
+    UNKNOWN,
+    COMPLETED
 }
