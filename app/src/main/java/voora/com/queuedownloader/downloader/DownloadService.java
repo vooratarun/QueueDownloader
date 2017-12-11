@@ -11,6 +11,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.downloader.Progress;
 
@@ -115,17 +116,20 @@ public class DownloadService extends Service  implements DownloadEventUIListener
 
     @Override
     public void onDownloadPaused(DItem dItem) {
+        Log.d(TAG,"onDownload paused " + dItem.toString());
         dbUpdateHandler.updatePauseInDB(dItem);
     }
 
     @Override
     public void onDownloadStarted(DItem dItem) {
+        Log.d(TAG,"onDownload Started " + dItem.toString());
         downloadProgressHandler.setDownloadItem(dItem);
         downloadProgressHandler.startForegroundNotification(dItem.getDownloadPercent());
     }
 
     @Override
     public void onDownloadCancelled(DItem dItem) {
+        Log.d(TAG,"onDownload Cancelled " + dItem.toString());
         dbUpdateHandler.updateCancelledInDB(dItem);
         downloadProgressHandler.stopForegroundNotification();
         stopSelf();
@@ -133,6 +137,7 @@ public class DownloadService extends Service  implements DownloadEventUIListener
 
     @Override
     public void onDownloadCompleted(DItem dItem) {
+        Log.d(TAG,"onDownload Completed " + dItem.toString());
         dbUpdateHandler.updateCompletedInDB(dItem);
         downloadProgressHandler.stopForegroundNotification();
         stopService();

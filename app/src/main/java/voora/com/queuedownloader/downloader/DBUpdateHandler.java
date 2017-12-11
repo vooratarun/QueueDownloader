@@ -21,6 +21,8 @@ public class DBUpdateHandler {
         this.context = context.getApplicationContext();
     }
 
+
+
     public void updateProgressInDB(DItem dItem , int progress) {
         dItem.setDownloadPercent(progress);
         dItem.setState(DownloadState.DOWNLOADING.ordinal());

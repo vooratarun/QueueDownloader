@@ -87,17 +87,17 @@ public class MainActivity extends MvpLceActivity<RelativeLayout,List<DItem>,Main
 
     @Override
     public void onPauseClick(DItem dItem) {
-        DownloadService.pauseDownload(this,selectedItem);
+        DownloadService.pauseDownload(this,dItem);
     }
 
     @Override
     public void onResumeClick(DItem dItem) {
-        DownloadService.resumeDownload(this,selectedItem);
+        DownloadService.resumeDownload(this,dItem);
     }
 
     @Override
     public void onCancleClick(DItem dItem) {
-        DownloadService.cancelDownload(this,selectedItem);
+        DownloadService.cancelDownload(this,dItem);
     }
 
     @Override

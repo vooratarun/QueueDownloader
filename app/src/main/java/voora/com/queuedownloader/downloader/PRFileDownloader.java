@@ -30,6 +30,8 @@ public class PRFileDownloader implements OnProgressListener, OnPauseListener,
     private static final String  TAG  = "PRFILEDOWNLOADER";
     private final int UPDATE_PROGRESS_INTERVAL = 3000;
     private int currentDownloadId ;
+
+    @Nullable
     ScheduledExecutorService updateService;
 
 
@@ -84,6 +86,7 @@ public class PRFileDownloader implements OnProgressListener, OnPauseListener,
     @Override
     public void onError(Error error) {
         downloaderState = DownloaderState.AVAILABLE;
+        Log.d(TAG,"onDownload Error");
     }
 
     @Override
@@ -106,6 +109,7 @@ public class PRFileDownloader implements OnProgressListener, OnPauseListener,
             .setOnPauseListener(this);
 
         currentDownloadId = downloadRequest.start(this);
+        downloadItem.setDownloadId(currentDownloadId);
         startUpdateService();
     }
 
@@ -116,7 +120,8 @@ public class PRFileDownloader implements OnProgressListener, OnPauseListener,
     }
 
     private void stopUpDateService() {
-        updateService.shutdown();
+        if(updateService != null && !updateService.isShutdown())
+            updateService.shutdown();
     }
 
     public void pauseFileDownload() {
